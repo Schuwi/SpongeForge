@@ -29,10 +29,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.reflect.TypeToken;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -98,7 +96,7 @@ public abstract class MixinEventBus implements IMixinEventBus {
         try (final CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
             spongeEvent = SpongeForgeEventFactory.createSpongeEvent(forgeEvent);
             IEventListener[] listeners = forgeEvent.getListenerList().getListeners(this.busID);
-            boolean cancelled = ((SpongeModEventManager) SpongeImpl.getGame().getEventManager()).post(spongeEvent, forgeEvent, listeners);
+            boolean cancelled = ((SpongeModEventManager) SpongeImpl.getGame().getEventManager()).post(spongeEvent, forgeEvent, listeners, true);
             if (!cancelled) {
                 SpongeForgeEventFactory.onForgePost(forgeEvent);
             }
@@ -132,7 +130,8 @@ public abstract class MixinEventBus implements IMixinEventBus {
             IEventListener[] listeners = event.getListenerList().getListeners(this.busID);
             if (!forced && (event instanceof org.spongepowered.api.event.Event || spongeEvent != null) && !Sponge.getGame().getPlatform()
                 .getExecutionType().isClient()) {
-                boolean cancelled = ((SpongeModEventManager) SpongeImpl.getGame().getEventManager()).post(spongeEvent, event, listeners);
+                boolean cancelled = ((SpongeModEventManager) SpongeImpl.getGame().getEventManager()).post(
+                        spongeEvent, event, listeners, SpongeModEventManager.shouldUseCauseStackManager(false));
                 if (!cancelled) {
                     SpongeForgeEventFactory.onForgePost(event);
                 }
